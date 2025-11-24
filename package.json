@@ -3,14 +3,14 @@
   "description": "A xeto extension",
   "displayName": "Xeto",
   "license": "BSD-3",
-  "version": "0.1.35",
+  "version": "0.2.0",
   "categories": [],
   "keywords": [
     "multi-root ready"
   ],
-  "publisher": "novo-studio",
+  "publisher": "xeto",
   "repository": {
-    "url": "https://github.com/Novo-Int/xeto-vscode-extension"
+    "url": "https://github.com/xetobase/xeto-vscode-extension"
   },
   "engines": {
     "vscode": "^1.73.0"

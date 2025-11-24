@@ -1,13 +1,13 @@
 {
 	"name": "xeto-client",
 	"description": "Xeto Client",
-	"author": "Novo Studio",
+	"author": "Xetobase",
 	"license": "BSD-3",
 	"version": "0.1.6",
-	"publisher": "novo-studio",
+	"publisher": "xeto",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Novo-Int/pog-vscode-extension"
+		"url": "https://github.com/xetobase/xeto-vscode-extension"
 	},
 	"engines": {
 		"vscode": "^1.73.0"

@@ -1,6 +1,6 @@
 # XETO Extension for VSCode
 
-[![GitHub CI](https://github.com/Novo-Int/xeto-vscode-extension/actions/workflows/main.yml/badge.svg)](https://github.com/Novo-Int/xeto-vscode-extension/actions/workflows/main.yml)
+[![GitHub CI](https://github.com/xetobase/xeto-vscode-extension/actions/workflows/main.yml/badge.svg)](https://github.com/xetobase/xeto-vscode-extension/actions/workflows/main.yml)
 [![License](https://img.shields.io/badge/license-bsd--3--clause-brightgreen)](https://opensource.org/license/bsd-3-clause/)
 
 ## Overview
@@ -112,7 +112,7 @@ Note: Some features (like go to definition) may take a few seconds to start, as 
 
 ### GitHub Release
 
-1. Go to the "Releases" [section](https://github.com/Novo-Int/xeto-vscode-extension/releases)
+1. Go to the "Releases" [section](https://github.com/xetobase/xeto-vscode-extension/releases)
 2. Download the latest release package under `extension.vsix`
 3. Launch Visual Studio Code
 4. Open the `Extensions` tab using <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd> or <kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd>

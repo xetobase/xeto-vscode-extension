@@ -2,7 +2,7 @@
 	"name": "xeto-lsp",
 	"description": "Xeto LSP for VSCode",
 	"version": "0.1.6",
-	"author": "Novo Studio",
+	"author": "Xetobase",
 	"license": "BSD-3",
 	"engines": {
 		"node": "*",
@@ -10,7 +10,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Novo-Int/pog-vscode-extension.git"
+		"url": "https://github.com/xetobase/xeto-vscode-extension.git"
 	},
 	"dependencies": {
 		"vscode-languageserver": "^7.0.0",
