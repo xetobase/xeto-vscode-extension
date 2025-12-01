@@ -16,7 +16,7 @@ export let platformEol: string;
  */
 export async function activate(docUri: vscode.Uri): Promise<void> {
   // The extensionId is `publisher.name` from package.json
-  const ext = vscode.extensions.getExtension("xeto.xeto-extension");
+  const ext = vscode.extensions.getExtension("xeto.xeto-vscode-extension");
   if (!ext) {
     return;
   }

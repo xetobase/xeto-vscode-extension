@@ -87,9 +87,13 @@ export const onInitialized = async (
 
   const settings = await connection.workspace.getConfiguration("xeto");
 
-  loadSysLibsFromGH(settings.libraries.sys, libManager);
+  // Provide defaults if settings are null
+  const sysLibSha = settings?.libraries?.sys ?? "eab1c91438b73aee20a80a7e43baa9f387599df9";
+  const externalLibs = settings?.libraries?.external ?? [];
+
+  loadSysLibsFromGH(sysLibSha, libManager);
   loadExtLibs(
-    settings.libraries.external as Array<string | ExtLibDef>,
+    externalLibs as Array<string | ExtLibDef>,
     libManager
   );
 };

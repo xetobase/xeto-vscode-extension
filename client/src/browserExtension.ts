@@ -115,7 +115,7 @@ function createWorkerLanguageClient(
 
   // create the language server client to communicate with the server running in the worker
   return new LanguageClient(
-    "xeto-extension",
+    "xeto-vscode-extension",
     "Xeto Web Extension",
     clientOptions,
     worker

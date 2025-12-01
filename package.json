@@ -1,9 +1,9 @@
 {
-  "name": "xeto-extension",
+  "name": "xeto-vscode-extension",
   "description": "A xeto extension",
-  "displayName": "Xeto",
+  "displayName": "Xeto IDE Extension",
   "license": "BSD-3",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "categories": [],
   "keywords": [
     "multi-root ready"

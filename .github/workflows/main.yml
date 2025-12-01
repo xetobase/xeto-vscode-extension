@@ -39,12 +39,12 @@ jobs:
       - run: npm run compile
       - run: npm install -g vsce
       - name: Generate extension package
-        run: vsce package -o ./xeto-extension.vsix
+        run: vsce package -o ./xeto-vscode-extension.vsix
       - name: Push extension to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./xeto-extension.vsix
+          file: ./xeto-vscode-extension.vsix
           asset_name: extension.vsix
           tag: ${{ github.ref }}
           overwrite: true
