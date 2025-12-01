@@ -1,9 +1,9 @@
 {
   "name": "xeto-vscode-extension",
-  "description": "A xeto extension",
+  "description": "Language support for Xeto - provides syntax highlighting, auto-complete, and code navigation for .xeto files",
   "displayName": "Xeto IDE Extension",
   "license": "BSD-3",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "categories": [],
   "keywords": [
     "multi-root ready"
