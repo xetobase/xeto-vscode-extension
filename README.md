@@ -5,21 +5,23 @@
 
 ## Overview
 
-The XETO Extension for VSCode provides language support and code editing features for the XETO language using the Language Server Protcol (LSP). It offers features as:
+The XETO Extension for VSCode provides language support and code editing features for the XETO language using the Language Server Protocol (LSP).
 
-- syntax highlighting
-- code completion
-- diagnostics
-- semantic tokens
-- hover information
-- go to definition
-- rename symbols
-- formatting
+### Key Features
 
-The extesion can be used both in:
+- **Syntax highlighting** - Rich syntax highlighting for XETO code
+- **Code completion** - Intelligent autocomplete suggestions
+- **Semantic tokens** - Context-aware syntax coloring
+- **Hover information** - Inline documentation on hover
+- **Go to definition** - Navigate to symbol definitions
+- **Rename symbols** - Rename across entire workspace
+- **Formatting** - Automatic code formatting
 
-- desktop environment (`VisualCode`)
-- web environment, as a web extension (compatible with [vscode.dev](https://vscode.dev) and [github.dev](https://github.dev))
+### Environments
+
+The extension works in both:
+- **Desktop environment** - Full-featured VS Code
+- **Web environment** - Compatible with [vscode.dev](https://vscode.dev) and [github.dev](https://github.dev)
 
 ## Features
 
@@ -99,7 +101,7 @@ Note: some settings cannot be changed via the UI so you may need to edit the `se
 2. The XETO Extension will automatically active and provide language-provided features
 3. Use the provided Visual Studio Code keyboard actions and/or commands
 
-Note: Some features (like go to definition) may take a few seconds to start, as we are reading `sys` libraries that are external to the host machine
+**Note:** Some features (like go to definition) may take a few seconds to initialize as the extension loads system libraries.
 
 ## Installation
 
@@ -119,7 +121,11 @@ Note: Some features (like go to definition) may take a few seconds to start, as 
 5. Select `Install from VSIX...` from the `Views and More Actions` menu
 6. Navigate to the downloaded file and select it
 
-Note: more instructions on how to install extension from a `VSIX` [here](https://code.visualstudio.com/docs/editor/extension-marketplace#_install-from-a-vsix)
+**Note:** For detailed instructions on installing from VSIX, see the [official VS Code documentation](https://code.visualstudio.com/docs/editor/extension-marketplace#_install-from-a-vsix).
+
+## Contributing
+
+We welcome bug reports, feature requests, and feedback! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 

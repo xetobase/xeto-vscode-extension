@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentation
+    url: https://github.com/xetobase/xeto-vscode-extension/blob/main/README.md
+    about: Read the extension documentation
+  - name: 🔍 Search Existing Issues
+    url: https://github.com/xetobase/xeto-vscode-extension/issues
+    about: Check if your issue has already been reported
