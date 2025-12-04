@@ -20,7 +20,6 @@ export class XetoLib {
   }
 
   readonly name: string;
-  readonly children: Record<string, Proto> = {};
   readonly rootProto: Proto;
 
   public get includePriority(): number {
@@ -42,7 +41,6 @@ export class XetoLib {
   }
 
   public addChild(name: string, proto: Proto): void {
-    this.children[name] = proto;
     this.rootProto.children[name] = proto;
   }
 

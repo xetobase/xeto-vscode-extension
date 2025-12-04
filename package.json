@@ -3,7 +3,7 @@
   "description": "Language support for Xeto - provides syntax highlighting, auto-complete, and code navigation for .xeto files",
   "displayName": "Xeto IDE Extension",
   "license": "BSD-3",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "categories": [],
   "keywords": [
     "multi-root ready"
