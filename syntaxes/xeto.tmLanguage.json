@@ -72,6 +72,15 @@
         { "include": "#embeddedMarkdown" }
       ]
     },
+    "globalTag": {
+      "match": "(\\*)\\s*([a-z][a-zA-Z0-9_]*)\\s*(:)",
+      "name": "xeto.global.tag",
+      "captures": {
+        "1": { "name": "keyword.operator.global" },
+        "2": { "name": "entity.name.global" },
+        "3": { "name": "keyword.operator" }
+      }
+    },
     "markerName": {
       "match": "[a-z][a-zA-Z0-9_]*(?=\\s*:[^:])",
       "name": "xeto.name.marker",
@@ -96,16 +105,26 @@
       }
     },
     "qname": {
-      "match": "([a-zA-Z][a-zA-Z0-9_]*)(\\.[a-zA-Z][a-zA-Z0-9_]*)*(::[a-zA-Z][a-zA-Z0-9_]*)?",
+      "match": "([a-zA-Z][a-zA-Z0-9_]*)(\\s*\\.\\s*[a-zA-Z][a-zA-Z0-9_]*)*(\\s*::\\s*[a-zA-Z][a-zA-Z0-9_]*)?",
       "name": "xeto.qname",
       "captures": {
         "0": { "name": "entity.name.type" },
         "3": { "name": "entity.name.lib_type" }
       }
     },
+    "protoMixin": {
+      "match": "(\\+)\\s*([a-zA-Z0-9_]+(?:\\s*\\.\\s*[a-zA-Z0-9_]+)*(?:\\s*::\\s*[a-zA-Z0-9_]+)?)",
+      "name": "xeto.proto.mixin",
+      "captures": {
+        "1": { "name": "keyword.operator" },
+        "2": { "name": "entity.name.type" }
+      }
+    },
     "protoSimple": {
       "name": "xeto.proto.simple",
       "patterns": [
+        { "include": "#protoMixin" },
+        { "include": "#globalTag" },
         { "include": "#protoMarker" },
         { "include": "#protoUnnamed" },
         { "include": "#protoOptional" },

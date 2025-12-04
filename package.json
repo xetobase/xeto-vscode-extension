@@ -3,7 +3,7 @@
   "description": "Language support for Xeto - provides syntax highlighting, auto-complete, and code navigation for .xeto files",
   "displayName": "Xeto IDE Extension",
   "license": "BSD-3",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "categories": [],
   "keywords": [
     "multi-root ready"
@@ -71,36 +71,22 @@
         "id": "dataInstance",
         "superType": "decorator",
         "description": "Data istance"
+      },
+      {
+        "id": "globalTag",
+        "superType": "variable",
+        "description": "Global tag declaration with * prefix"
       }
     ],
-    "configurationDefaults": {
-      "[xeto]": {
-        "editor.semanticHighlighting.enabled": true
-      },
-      "editor.semanticTokenColorCustomizations": {
-        "enabled": true,
-        "rules": {
-          "label": {
-            "foreground": "#0cd319",
-            "bold": true,
-            "underline": false,
-            "italic": true
-          },
-          "namespace": {
-            "foreground": "#002fff",
-            "bold": true
-          },
-          "docLink": {
-            "foreground": "#12a4d1",
-            "bold": true
-          },
-          "dataInstance": {
-            "foreground": "#b4af1f",
-            "bold": true
-          }
+    "semanticTokenScopes": [
+      {
+        "scopes": {
+          "globalTag": ["entity.name.global"],
+          "docLink": ["entity.name.type", "markup.underline.link"],
+          "dataInstance": ["entity.name.type.instance"]
         }
       }
-    }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

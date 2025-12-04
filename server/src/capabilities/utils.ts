@@ -212,6 +212,34 @@ export function getProtoFromFileLoc(input: ProtoFromLocInput): Proto | null {
     findProtoByQname(identifier, compiledDocument.root);
 
   if (proto != null) {
+    //  check if we are on the qname location
+    //  if so, we want to go to the ref type
+    if (proto.qnameLoc) {
+      const cursorOffset = doc.offsetAt(input.pos);
+      const start = proto.qnameLoc.charIndex;
+      const end = start + proto.type.length;
+
+      if (cursorOffset >= start && cursorOffset <= end) {
+        // If refType resolved to itself (common in Mixins like +Funcs),
+        // or name equals type (recursive definition)
+        // try to find the external definition in dependencies
+        if (proto.refType === proto || proto.name === proto.type) {
+          const lib = input.uriToLibs.get(compiledDocument.sourceUri);
+          const externalProto = input.libManager.findProtoByQName(
+            proto.type,
+            lib?.deps
+          );
+          if (externalProto) {
+            return externalProto;
+          }
+        }
+
+        if (proto.refType) {
+          return proto.refType;
+        }
+      }
+    }
+
     return proto;
   } else {
     // 	search in the files lib first

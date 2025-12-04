@@ -20,6 +20,8 @@ export class Token {
   static QUESTION = new Token("?");
   static AMP = new Token("&");
   static PIPE = new Token("|");
+  static PLUS = new Token("+");
+  static ASTERISK = new Token("*");
   static NL = new Token("newline");
 
   static TRIPLE_DASH = new Token("---", true);

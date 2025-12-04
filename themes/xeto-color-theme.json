@@ -1,4 +1,7 @@
 {
+	"//": "NOTE: This theme file is NOT currently registered in package.json and is not being used.",
+	"//": "To use this theme, it would need to be added to the 'contributes.themes' section in package.json.",
+	"//": "Users would then need to manually select 'Xeto Dark' from VS Code's theme picker.",
 	"$schema": "vscode://schemas/color-theme",
 	"type": "dark",
 	"semanticHighlighting": true,
@@ -769,6 +772,12 @@
 			"scope": "entity.name.tag",
 			"settings": {
 				"foreground": "#569CD6"
+			}
+		},
+		{
+			"scope": ["entity.name.global", "keyword.operator.global"],
+			"settings": {
+				"foreground": "#C586C0"
 			}
 		},
 		{

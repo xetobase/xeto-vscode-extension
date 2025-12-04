@@ -442,6 +442,10 @@ export class Tokenizer {
         return Token.AMP;
       case "|":
         return Token.PIPE;
+      case "+":
+        return Token.PLUS;
+      case "*":
+        return Token.ASTERISK;
       case "\0":
         return Token.EOF;
     }

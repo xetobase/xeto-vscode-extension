@@ -14,6 +14,7 @@ enum SemanticType {
   REFERENCE,
   DOC_REFERENCE,
   DATA_INSTANCE,
+  GLOBAL_TAG,
 }
 
 interface SemanticToken {
@@ -140,6 +141,17 @@ const getDocRefs = (proto: Proto, source: string): SemanticToken[] => {
   return ret;
 };
 
+const isGlobalTag = (proto: Proto, source: string): boolean => {
+  if (!proto.loc) {
+    return false;
+  }
+
+  // Check if there's a * before the tag name in the source
+  const lineStart = source.lastIndexOf('\n', proto.loc.charIndex) + 1;
+  const textBeforeTag = source.substring(lineStart, proto.loc.charIndex);
+  return textBeforeTag.trim().startsWith('*');
+};
+
 const extractSemanticProtosRecursive = (
   root: Proto,
   proto: Proto,
@@ -150,6 +162,15 @@ const extractSemanticProtosRecursive = (
   //  maybe we have some links in the comments
   if (hasDocRefs(proto)) {
     bag.push(...getDocRefs(proto, source));
+  }
+
+  // Check for global tags first (before marker check)
+  if (isGlobalTag(proto, source)) {
+    bag.push({
+      proto,
+      type: SemanticType.GLOBAL_TAG,
+    });
+    return;
   }
 
   if (isMarker(root, proto, libManager)) {
@@ -205,6 +226,8 @@ const extractPosFromToken = (token: SemanticToken): Pos => {
       return token.extraInfo as unknown as Pos;
     case SemanticType.DATA_INSTANCE:
       return extractPosFromProto(token.proto);
+    case SemanticType.GLOBAL_TAG:
+      return extractPosFromProto(token.proto);
   }
 };
 
@@ -218,6 +241,8 @@ const semanticTokenToLegendIndex = (type: SemanticType): number => {
       return 2;
     case SemanticType.DATA_INSTANCE:
       return 3;
+    case SemanticType.GLOBAL_TAG:
+      return 4;
   }
 };
 

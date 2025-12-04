@@ -138,6 +138,23 @@ export class Parser {
     if (this.cur === Token.RBRACE) return null;
     if (this.cur === Token.GT) return null;
 
+    // Check for mixin (+)
+    if (this.cur === Token.PLUS) {
+      const proto = this.parseMixin();
+      if (docInfo) {
+        proto.doc = docInfo.doc;
+        proto.docLoc = docInfo.loc;
+      }
+      return proto;
+    }
+
+    // Check for global (*)
+    let isGlobal = false;
+    if (this.cur === Token.ASTERISK) {
+      this.consume();
+      isGlobal = true;
+    }
+
     // this token is start of our proto production
     const proto = new ParsedProto(this.curToLoc(), this.cur === Token.REF);
     if (docInfo) {
@@ -148,6 +165,9 @@ export class Parser {
     if (this.cur === Token.REF) {
       proto.name = "@" + this.consumeDataName();
       this.parseLibData(proto);
+      if (isGlobal) {
+        proto.traits.global = { _is: "sys.Marker" };
+      }
       return proto;
     }
 
@@ -173,7 +193,46 @@ export class Parser {
       this.parseBody(proto);
     }
 
+    if (isGlobal) {
+      proto.traits.global = { _is: "sys.Marker" };
+    }
+
     this.parseTrailingDoc(proto);
+
+    return proto;
+  }
+
+  private parseMixin(): ParsedProto {
+    const loc = this.curToLoc();
+    this.consume(Token.PLUS);
+
+    const qnameLoc = new FileLoc(
+      this.fileLoc.file,
+      this.curLine,
+      this.curCol,
+      this.curCharIndex
+    );
+    const qname = this.consumeQName();
+
+    // The name of the mixin is the simple name of the type
+    const name = qname.includes("::")
+      ? qname.split("::").pop()!
+      : qname.includes(".")
+      ? qname.split(".").pop()!
+      : qname;
+
+    const proto = new ParsedProto(loc);
+    proto.name = name;
+
+    // It acts as a type definition inheriting from itself (the ref)
+    proto.traits._is = qname;
+    proto.traits._type = "sys.Ref";
+    proto.traits._qnameLoc = qnameLoc;
+
+    // Add mixin marker
+    proto.traits.mixin = { _is: "sys.Marker" };
+
+    this.parseBody(proto);
 
     return proto;
   }
@@ -560,7 +619,6 @@ export class Parser {
     } else {
       if (isMeta) {
         if (name === "is") this.err("Proto name 'is' is reserved", child.loc);
-        if (name === "val") this.err("Proto name 'val' is reserved", child.loc);
         name = "_" + name;
         //  this may seem like a hack, because it is,
         //  but there is no change of collision with user provided names
