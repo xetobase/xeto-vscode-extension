@@ -67,9 +67,10 @@
         { "include": "#leadingDoc" },
         { "include": "#protoIntersection" },
         { "include": "#trailingDoc" },
-        { "include": "#embeddedJS" },
         { "include": "#embeddedAxon" },
-        { "include": "#embeddedMarkdown" }
+        { "include": "#embeddedJS" },
+        { "include": "#embeddedMarkdown" },
+        { "include": "#heredoc" }
       ]
     },
     "globalTag": {
@@ -203,10 +204,27 @@
     "leadingDoc": {
       "patterns": [{ "include": "#lineComment" }]
     },
+    "heredoc": {
+      "name": "string.unquoted.heredoc.xeto",
+      "begin": "-{3,}",
+      "end": "-{3,}",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.xeto" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.xeto" }
+      }
+    },
     "embeddedAxon": {
       "name": "meta.embedded.block.axon",
-      "begin": "---\\s*axon",
-      "end": "---",
+      "begin": "-{3,}\\s*axon",
+      "end": "-{3,}",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.xeto" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.xeto" }
+      },
       "patterns": [
         {
           "include": "source.axon"
@@ -215,8 +233,14 @@
     },
     "embeddedJS": {
       "name": "meta.embedded.block.js",
-      "begin": "---\\s*javascript",
-      "end": "---",
+      "begin": "-{3,}\\s*javascript",
+      "end": "-{3,}",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.xeto" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.xeto" }
+      },
       "patterns": [
         {
           "include": "source.js"
@@ -225,8 +249,14 @@
     },
     "embeddedMarkdown": {
       "name": "meta.embedded.block.md",
-      "begin": "^\\s*---\\s*markdown\\s*$",
-      "end": "^\\s*(---)\\s*$",
+      "begin": "-{3,}\\s*markdown",
+      "end": "-{3,}",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.xeto" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.xeto" }
+      },
       "patterns": [
         {
           "include": "text.html.markdown"

@@ -279,6 +279,10 @@ export class Parser {
       return this.parseProtoChildren(proto, Token.LBRACE, Token.RBRACE, false);
     }
 
+    if (this.cur === Token.TRIPLE_DASH) {
+      return this.parseVal(proto);
+    }
+
     if (this.cur.isVal) {
       return this.parseVal(proto);
     }
@@ -501,7 +505,13 @@ export class Parser {
       if (this.cur === Token.ID) {
         child.name = this.consumeName();
 
-        if (this.cur !== Token.COLON) {
+        if (this.cur === Token.LBRACE) {
+          // unnamed typed dict: TypeName { ... }
+          child.traits._is = child.name;
+          child.traits._type = "sys.Ref";
+          child.name = null;
+          this.parseDict(child, Token.LBRACE, Token.RBRACE);
+        } else if (this.cur !== Token.COLON) {
           child.traits = {
             _is: "sys.Marker",
           };
@@ -556,6 +566,13 @@ export class Parser {
   private parseData(parent: ParsedProto): void {
     if (this.cur === Token.REF) {
       this.parseDataRef(parent);
+      return;
+    }
+
+    if (this.cur === Token.TRIPLE_DASH) {
+      parent.traits._val = this.curVal;
+      parent.traits._is = "sys.Str";
+      this.consume();
       return;
     }
 

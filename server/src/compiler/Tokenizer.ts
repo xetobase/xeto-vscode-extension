@@ -198,41 +198,121 @@ export class Tokenizer {
   }
 
   private code(): Token {
-    let s = "---";
+    // we already consumed the first "-" in operator(), consume remaining "--"
+    // and count any additional dashes
+    let numDashes = 3;
+    while (this.cur === "-") {
+      numDashes++;
+      this.consume();
+    }
+
+    // skip spaces after opening dashes
+    while (this.cur === " " || this.cur === "\t") {
+      this.consume();
+    }
+
+    // collect lines until we find the closing dashes
+    const lines: string[] = [];
+    let s = "";
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      const ch = this.cur;
-      if (ch === "-") {
-        this.consume();
-        if (this.cur !== "-" || this.peek !== "-") {
-          s += '"';
-          continue;
-        }
-
-        this.consume();
-        this.consume();
-
-        break;
-      }
-
-      if (ch === "\0") {
+      if (this.cur === "\0") {
         this.currentError = new CompilerError(
-          "Unexpected end of code fence",
+          "Unexpected end of heredoc",
           ErrorTypes.UNCLOSED_STRING,
           new FileLoc("", this.line, this.col, this.charIndex),
           new FileLoc("", this.curLine, this.curCol)
         );
-        this.val = s;
-        return Token.STR;
+        lines.push(s);
+        this.val = this.normMultiLineStr(lines);
+        return Token.TRIPLE_DASH;
       }
 
+      // on newline, push the current line and start a new one
+      if (this.cur === "\n") {
+        lines.push(s);
+        s = "";
+        this.consume();
+        continue;
+      }
+
+      // check if we're at the closing dashes
+      if (this.cur === "-" && this.isHeredocEnd(numDashes)) {
+        for (let i = 0; i < numDashes; i++) {
+          this.consume();
+        }
+        lines.push(s);
+        break;
+      }
+
+      s += this.cur;
       this.consume();
-      s += ch;
     }
 
-    this.val = s;
+    this.val = this.normMultiLineStr(lines);
     return Token.TRIPLE_DASH;
+  }
+
+  private isHeredocEnd(numDashes: number): boolean {
+    // peek ahead in the input buffer to check for numDashes consecutive dashes
+    for (let i = 0; i < numDashes; i++) {
+      const idx = this.currentIndexInInput + i - 2;
+      if (idx < 0 || idx >= this.input.length) {
+        if (i === 0 && this.cur !== "-") return false;
+        if (i === 1 && this.peek !== "-") return false;
+        return false;
+      }
+      // char at position: for i=0 it's this.cur, i=1 it's this.peek, i=2+ is in the buffer
+      const ch = i === 0 ? this.cur : i === 1 ? this.peek : this.input.charAt(this.currentIndexInInput + i - 2);
+      if (ch !== "-") return false;
+    }
+    // make sure the char after the dashes is NOT another dash
+    const afterIdx = this.currentIndexInInput + numDashes - 2;
+    if (afterIdx < this.input.length) {
+      const after = this.input.charAt(afterIdx);
+      if (after === "-") return false;
+    }
+    return true;
+  }
+
+  private normMultiLineStr(lines: string[]): string {
+    if (lines.length === 0) return "";
+    if (lines.length === 1) return lines[0];
+
+    const firstIsEmpty = lines[0].trim().length === 0;
+    const lastIsEmpty = lines[lines.length - 1].trim().length === 0;
+
+    // find minimum indentation (ignoring blank lines)
+    let indent = Infinity;
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmed = line.trimStart();
+      if (trimmed.length === 0) continue;
+      indent = Math.min(indent, line.length - trimmed.length);
+    }
+    if (!isFinite(indent)) indent = 0;
+    if (lastIsEmpty && lines[lines.length - 1].length < indent) {
+      indent = lines[lines.length - 1].length;
+    }
+
+    // build normalized string
+    let s = "";
+    if (!firstIsEmpty) s += lines[0] + "\n";
+    for (let i = 1; i < lines.length - 1; i++) {
+      const line = lines[i];
+      if (line.length <= indent) {
+        s += "\n";
+      } else {
+        s += line.substring(indent) + "\n";
+      }
+    }
+    if (!lastIsEmpty) {
+      const last = lines[lines.length - 1];
+      s += last.length > indent ? last.substring(indent) : "";
+    }
+
+    return s;
   }
 
   private ref(): Token {
