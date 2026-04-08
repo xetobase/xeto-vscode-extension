@@ -17,7 +17,8 @@ import fs from "fs/promises";
 
 import { type ProtoCompiler } from "./compiler/Compiler";
 import { type Dirent } from "fs";
-import { LibraryManager } from "./libraries/";
+import { LibraryManager, loadBundledLibs, loadXetolibIntoManager, xetolibContentCache } from "./libraries/";
+import * as path from "node:path";
 
 import { generateInitResults, onInitialized } from "./init";
 
@@ -89,11 +90,11 @@ const addWorkspaceRootToWatch = async (
     files.map(async (dirEntry: Dirent) => {
       if (dirEntry.isDirectory()) {
         return await addWorkspaceRootToWatch(
-          `${uri}/${dirEntry.name}`,
+          path.join(uri, dirEntry.name),
           storage
         );
       } else {
-        storage.push(`${uri}/${dirEntry.name}`);
+        storage.push(path.join(uri, dirEntry.name));
       }
     })
   );
@@ -109,6 +110,13 @@ const parseAllRootFolders = (): void => {
     .filter((folder) => Boolean(folder))
     .forEach((folderPath) => {
       void addWorkspaceRootToWatch(folderPath).then((files) => {
+        // Load any compiled .xetolib files found in the workspace (priority 50)
+        files
+          .filter((f) => f.endsWith(".xetolib"))
+          .forEach((f) => {
+            loadXetolibIntoManager(f, libManager, 50);
+          });
+
         const xetoFiles = files.filter((path) => path.endsWith(".xeto"));
         totalToLoad += xetoFiles.length;
 
@@ -144,6 +152,13 @@ const parseAllRootFolders = (): void => {
 
 connection.onInitialize((params: InitializeParams) => {
   rootFolders = getRootFolderFromParams(params);
+
+  // Load bundled standard libs from the extension install directory
+  const extensionPath = params.initializationOptions?.extensionPath;
+  if (extensionPath != null) {
+    const bundledLibsPath = path.join(extensionPath, "bundled-libs");
+    loadBundledLibs(bundledLibsPath, libManager);
+  }
 
   parseAllRootFolders();
 
@@ -183,6 +198,11 @@ documents.onDidChangeContent((change) => {
 connection.onDidChangeWatchedFiles((_change) => {
   // Monitored files have change in VSCode
   connection.console.log("We received an file change event");
+});
+
+// Custom request: serve extracted xetolib content for cmd+click navigation
+connection.onRequest("xetolib/content", (params: { uri: string }) => {
+  return xetolibContentCache.get(params.uri) ?? null;
 });
 
 addAutoCompletion(

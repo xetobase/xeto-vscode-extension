@@ -10,7 +10,6 @@ import {
   type ExtLibDef,
   type LibraryManager,
   loadExtLibs,
-  loadSysLibsFromGH,
 } from "./libraries";
 import { type ProtoCompiler } from "./compiler/Compiler";
 
@@ -87,11 +86,8 @@ export const onInitialized = async (
 
   const settings = await connection.workspace.getConfiguration("xeto");
 
-  // Provide defaults if settings are null
-  const sysLibSha = settings?.libraries?.sys ?? "eab1c91438b73aee20a80a7e43baa9f387599df9";
   const externalLibs = settings?.libraries?.external ?? [];
 
-  loadSysLibsFromGH(sysLibSha, libManager);
   loadExtLibs(
     externalLibs as Array<string | ExtLibDef>,
     libManager

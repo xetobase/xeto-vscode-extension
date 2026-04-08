@@ -2,6 +2,7 @@ import { type LibraryManager } from "./LibManager";
 import { XetoLib } from "./XetoLib";
 import { ProtoCompiler } from "../compiler/Compiler";
 import { readUrl } from "./utils";
+import { loadXetolibIntoManager } from "./loadXetolib";
 
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -18,16 +19,16 @@ const loadExtLib = (
 
     //	parse the lib file first
     const libXetoContents = fs
-      .readFileSync(`${root}/lib.xeto`)
+      .readFileSync(path.join(root, "lib.xeto"))
       .toString("utf-8");
     const libInfoCompiler = new ProtoCompiler(root);
 
     libInfoCompiler.run(libXetoContents);
 
     const libVersion =
-      libInfoCompiler.root?.children.pragma?.children._version.type ??
+      libInfoCompiler.root?.children?.pragma?.children?._version?.type ??
       "unknown";
-    const libDoc = libInfoCompiler.root?.children.pragma?.doc ?? "";
+    const libDoc = libInfoCompiler.root?.children?.pragma?.doc ?? "";
 
     const lib = new XetoLib(libName, libVersion, root, libDoc);
     lib.includePriority = priority;
@@ -80,8 +81,8 @@ const loadExtLibFromWeb = async (
   }
 
   const libVersion =
-    libInfoCompiler.root?.children.pragma?.children._version.type ?? "unknown";
-  const libDoc = libInfoCompiler.root?.children.pragma?.doc ?? "";
+    libInfoCompiler.root?.children?.pragma?.children?._version?.type ?? "unknown";
+  const libDoc = libInfoCompiler.root?.children?.pragma?.doc ?? "";
 
   const lib = new XetoLib(
     def.name,
@@ -111,8 +112,8 @@ const loadExtLibFromWeb = async (
   lm.addLib(lib);
 };
 
-const isFolderLib = (path: string): boolean =>
-  fs.existsSync(`${path}/lib.xeto`);
+const isFolderLib = (dirPath: string): boolean =>
+  fs.existsSync(path.join(dirPath, "lib.xeto"));
 
 export const loadExtLibs = (
   sources: Array<string | ExtLibDef>,
@@ -125,15 +126,25 @@ export const loadExtLibs = (
         if (isFolderLib(root)) {
           loadExtLib(root, lm, sources.length - index);
         } else {
-          //	it doesn't have a lib.xeto, so check all the folders and check if those are libs
+          //	check all subdirs for raw source (lib.xeto) or compiled xetolibs
           const entries = fs.readdirSync(root, { withFileTypes: true });
+          const priority = sources.length - index;
+
           entries
-            .filter(
-              (entry) =>
-                entry.isDirectory() && isFolderLib(`${root}/${entry.name}`)
-            )
+            .filter((entry) => entry.isDirectory())
             .forEach((dir) => {
-              loadExtLib(`${root}/${dir.name}`, lm, sources.length - index);
+              const dirPath = path.join(root, dir.name);
+
+              if (isFolderLib(dirPath)) {
+                loadExtLib(dirPath, lm, priority);
+              } else {
+                // Check for compiled .xetolib files inside the subdirectory
+                const files = fs.readdirSync(dirPath);
+                const xetolibFile = files.find((f) => f.endsWith(".xetolib"));
+                if (xetolibFile != null) {
+                  loadXetolibIntoManager(path.join(dirPath, xetolibFile), lm, priority);
+                }
+              }
             });
         }
       } else {

@@ -98,6 +98,7 @@ const browserServerConfig = {
 			url: require.resolve('url'),
 			buffer: require.resolve('buffer/'),
 			fs: false,
+			zlib: false,
 			assert: require.resolve('assert'),
 			constants: require.resolve('constants-browserify'),
 			stream: require.resolve('stream-browserify'),

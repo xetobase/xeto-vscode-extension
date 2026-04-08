@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-
 import * as https from "node:https";
+import { type LanguageClient } from "vscode-languageclient/node";
 
 const readUrl = async (url: string): Promise<string> => {
   const pr = new Promise<string>((resolve, _reject) => {
@@ -23,19 +23,35 @@ const readUrl = async (url: string): Promise<string> => {
 export default class XetoProvider
   implements vscode.TextDocumentContentProvider
 {
-  //	the docs are imutable, as they are taken from a GH commit
-  //	as such we don't need to invalidate the cache
-  //	we only need to populate it as needed
-  //	this is done in provideTextDocumentContent
   private readonly _documents = new Map<string, string>();
+  private readonly _client: LanguageClient | null;
+
+  constructor(client: LanguageClient | null = null) {
+    this._client = client;
+  }
 
   async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
-    //	we have it cached
+    // Check cache first
     if (this._documents.get(uri.toString())) {
       return this._documents.get(uri.toString()) ?? "";
     }
 
-    //	we need to retrieve it
+    // xetolib content: request from the language server
+    if (uri.authority === "xetolib" && this._client != null) {
+      const content: string | null = await this._client.sendRequest(
+        "xetolib/content",
+        { uri: uri.toString() }
+      );
+
+      if (content != null) {
+        this._documents.set(uri.toString(), content);
+        return content;
+      }
+
+      return `// Content not available for ${uri.toString()}`;
+    }
+
+    // Legacy: fetch from HTTPS (for old xeto:// → https:// URLs)
     const finalUri = vscode.Uri.from({
       ...uri,
       scheme: "https",

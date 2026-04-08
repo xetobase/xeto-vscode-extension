@@ -29,7 +29,7 @@ const libsLoadedCallback = (): void => {
 };
 
 eventBus.addListener(EVENT_TYPE.EXTERNAL_LIBS_LOADED, libsLoadedCallback);
-eventBus.addListener(EVENT_TYPE.SYS_LIBS_LOADED, libsLoadedCallback);
+eventBus.addListener(EVENT_TYPE.BUNDLED_LIBS_LOADED, libsLoadedCallback);
 eventBus.addListener(EVENT_TYPE.WORKSPACE_SCANNED, libsLoadedCallback);
 eventBus.addListener(EVENT_TYPE.URI_PARSED, (type, args) => {
   uriToLibs.set(args.uri, args.lib);
@@ -70,7 +70,7 @@ export const populateLibraryManager = async (
     const pragma = compiler.root?.children.pragma;
 
     libName = split[split.length - 2];
-    libVersion = pragma?.children._version.type;
+    libVersion = pragma?.children?._version?.type ?? "";
     libDoc = pragma?.doc ?? "";
 
     const protoDeps = pragma?.children._depends?.children;

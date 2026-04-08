@@ -50,6 +50,9 @@ export function activate(context: ExtensionContext): void {
       // Notify the server about file changes to '.clientrc files contained in the workspace
       fileEvents: workspace.createFileSystemWatcher("**/.clientrc"),
     },
+    initializationOptions: {
+      extensionPath: context.extensionPath,
+    },
   };
 
   // Create the language client and start the client.
@@ -63,7 +66,7 @@ export function activate(context: ExtensionContext): void {
   // Start the client. This will also launch the server
   client.start();
 
-  workspace.registerTextDocumentContentProvider("xeto", new XetoProvider());
+  workspace.registerTextDocumentContentProvider("xeto", new XetoProvider(client));
 
   const legend = (function () {
     const tokenTypesLegend = ["label", "namespace", "docLink", "dataInstance", "globalTag"];

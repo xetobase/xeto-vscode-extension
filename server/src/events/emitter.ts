@@ -1,5 +1,5 @@
 export const enum EVENT_TYPE {
-  SYS_LIBS_LOADED,
+  BUNDLED_LIBS_LOADED,
   EXTERNAL_LIBS_LOADED,
   WORKSPACE_SCANNED,
   URI_PARSED,
@@ -11,7 +11,7 @@ type Callback = (type: EVENT_TYPE, args: any) => void;
 class EventBus {
   private readonly __callbacks: Record<EVENT_TYPE, Set<Callback>> = {
     [EVENT_TYPE.EXTERNAL_LIBS_LOADED]: new Set(),
-    [EVENT_TYPE.SYS_LIBS_LOADED]: new Set(),
+    [EVENT_TYPE.BUNDLED_LIBS_LOADED]: new Set(),
     [EVENT_TYPE.WORKSPACE_SCANNED]: new Set(),
     [EVENT_TYPE.URI_PARSED]: new Set(),
     [EVENT_TYPE.WILL_RESOLVE_REFS]: new Set(),
