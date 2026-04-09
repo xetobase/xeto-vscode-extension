@@ -67,9 +67,15 @@ export const onInitialized = async (
       DidChangeConfigurationNotification.type,
       undefined
     );
+    // Watch for props file changes (fan.props, xeto.props)
     void connection.client.register(
       DidChangeWatchedFilesNotification.type,
-      undefined
+      {
+        watchers: [
+          { globPattern: "**/fan.props" },
+          { globPattern: "**/xeto.props" },
+        ],
+      }
     );
   }
   if (hasWorkspaceFolderCapability) {

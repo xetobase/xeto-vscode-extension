@@ -60,15 +60,14 @@ export class Proto {
     missingRefs: Proto[]
   ): void {
     if (this.hasRefType) {
+      // Search local file first, then own lib, then deps
       let currentAlias = findProtoByQname(this.type, root);
 
-      //  maybe is from this library
-      if (ownLib) {
+      if (currentAlias == null && ownLib) {
         currentAlias = findProtoByQname(this.type, ownLib.rootProto);
       }
 
-      //	maybe it's from a lib
-      if (currentAlias === null) {
+      if (currentAlias == null) {
         currentAlias = libManager.findProtoByQName(this.type, ownLib?.deps);
       }
 

@@ -11,6 +11,22 @@ export class LibraryManager {
     return `${lib.name}${NAME_SEPARATOR}${lib.includePriority}`;
   }
 
+  /** Remove all libs loaded above the given priority threshold (keeps bundled at -1) */
+  public clearAbovePriority(threshold: number): void {
+    for (const libName of Object.keys(this.libs)) {
+      const entries = this.libs[libName];
+      for (const key of Object.keys(entries)) {
+        if (entries[key].includePriority > threshold) {
+          delete entries[key];
+        }
+      }
+      // If no entries remain for this lib name, remove the outer key
+      if (Object.keys(entries).length === 0) {
+        delete this.libs[libName];
+      }
+    }
+  }
+
   public addLib(lib: XetoLib): void {
     if (this.libs[lib.name] === undefined) {
       this.libs[lib.name] = {};

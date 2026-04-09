@@ -8,7 +8,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { EVENT_TYPE, eventBus } from "../events";
 
-const loadExtLib = (
+export const loadExtLib = (
   root: string,
   lm: LibraryManager,
   priority: number
@@ -30,8 +30,21 @@ const loadExtLib = (
       "unknown";
     const libDoc = libInfoCompiler.root?.children?.pragma?.doc ?? "";
 
+    // Parse deps from pragma (required for cross-lib type resolution)
+    const protoDeps =
+      libInfoCompiler.root?.children?.pragma?.children?._depends?.children;
+    const deps: string[] = [];
+    if (protoDeps != null) {
+      Object.keys(protoDeps).forEach((key) => {
+        if (key.startsWith("#")) return;
+        const dep = protoDeps[key].children?.lib?.type;
+        if (dep != null) deps.push(dep);
+      });
+    }
+
     const lib = new XetoLib(libName, libVersion, root, libDoc);
     lib.includePriority = priority;
+    lib.addMeta(libVersion, libDoc, deps);
 
     //	parse all files
     files

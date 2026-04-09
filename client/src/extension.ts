@@ -4,9 +4,12 @@
 
 import * as path from "path";
 import {
+  commands,
   languages,
   workspace,
+  window,
   type ExtensionContext,
+  StatusBarAlignment,
   SemanticTokensLegend,
 } from "vscode";
 
@@ -83,6 +86,83 @@ export function activate(context: ExtensionContext): void {
       new XetoSemanticTokenProvider(client),
       legend
     )
+  );
+
+  // --- Status bar: xeto env path indicator (isolated, pull-based) ---
+  const statusBar = window.createStatusBarItem(StatusBarAlignment.Right, 50);
+  statusBar.text = "$(file-code) Xeto";
+  statusBar.tooltip = "Xeto environment — loading...";
+  statusBar.command = "xeto.showResolvedPath";
+  statusBar.show();
+  context.subscriptions.push(statusBar);
+
+  let pathInfo: { mode: string; workDir: string; pathCount: number; dirs: string[] } | null = null;
+  const pathChannel = window.createOutputChannel("Xeto Env Path");
+  context.subscriptions.push(pathChannel);
+
+  // Update the output channel with current path info
+  const updateOutputChannel = (): void => {
+    pathChannel.clear();
+    if (pathInfo == null) {
+      pathChannel.appendLine("No xeto environment path resolved yet.");
+      pathChannel.appendLine("Using bundled standard libs only.");
+      pathChannel.appendLine("");
+      pathChannel.appendLine("To enable path resolution, create a fan.props or xeto.props");
+      pathChannel.appendLine("file in your project root with a path= line.");
+    } else {
+      pathChannel.appendLine(`mode:    ${pathInfo.mode}`);
+      pathChannel.appendLine(`workDir: ${pathInfo.workDir}`);
+      pathChannel.appendLine(`path:`);
+      pathInfo.dirs.forEach((dir) => pathChannel.appendLine(`  ${dir}`));
+    }
+  };
+
+  // Poll the server for path info
+  const pollPathInfo = (): void => {
+    const activeUri = window.activeTextEditor?.document.uri.toString();
+    client.sendRequest("xeto/getPathInfo", { uri: activeUri }).then(
+      (result: unknown) => {
+        const info = result as typeof pathInfo;
+        if (info != null) {
+          pathInfo = info;
+          statusBar.text = `$(file-code) Xeto: ${info.mode} (${info.pathCount} paths)`;
+          statusBar.tooltip = `Xeto env: ${info.mode}\nworkDir: ${info.workDir}\n${info.pathCount} path dirs`;
+        } else {
+          pathInfo = null;
+          statusBar.text = "$(file-code) Xeto: bundled only";
+          statusBar.tooltip = "No fan.props or xeto.props found — using bundled libs";
+        }
+        updateOutputChannel();
+      },
+      () => {
+        // Request failed (server not ready), try again later
+        setTimeout(pollPathInfo, 5000);
+      }
+    );
+  };
+
+  // Start polling after 3 seconds (give server time to boot + scan)
+  setTimeout(pollPathInfo, 3000);
+
+  // Re-poll when switching to a different .xeto file (different repo = different path)
+  // Also notify the server so it can re-evaluate context for already-open files
+  context.subscriptions.push(
+    window.onDidChangeActiveTextEditor((editor) => {
+      if (editor?.document.languageId === "xeto") {
+        client.sendNotification("xeto/activeFileChanged", {
+          uri: editor.document.uri.toString(),
+        });
+        setTimeout(pollPathInfo, 500);
+      }
+    })
+  );
+
+  // Command: show the output channel
+  context.subscriptions.push(
+    commands.registerCommand("xeto.showResolvedPath", () => {
+      updateOutputChannel();
+      pathChannel.show();
+    })
   );
 }
 

@@ -22,15 +22,14 @@ let noLoaded = 0;
 const libsLoadedCallback = (): void => {
   noLoaded++;
 
-  if (noLoaded === 3) {
+  // Bundled + external libs = 2 events (workspace scan was removed in v0.4.0)
+  if (noLoaded === 2) {
     ARE_LIBS_LOADED = true;
-    eventBus.fire(EVENT_TYPE.WILL_RESOLVE_REFS);
   }
 };
 
 eventBus.addListener(EVENT_TYPE.EXTERNAL_LIBS_LOADED, libsLoadedCallback);
 eventBus.addListener(EVENT_TYPE.BUNDLED_LIBS_LOADED, libsLoadedCallback);
-eventBus.addListener(EVENT_TYPE.WORKSPACE_SCANNED, libsLoadedCallback);
 eventBus.addListener(EVENT_TYPE.URI_PARSED, (type, args) => {
   uriToLibs.set(args.uri, args.lib);
 });
@@ -46,9 +45,9 @@ export const populateLibraryManager = async (
   compiler: ProtoCompiler,
   connection: Connection,
   libManager: LibraryManager
-): Promise<void> => {
+): Promise<Array<{ name: string; loc: FileLoc }>> => {
   if (compiler.root == null) {
-    return;
+    return [];
   }
 
   const split = compiler.sourceUri.split("/");
@@ -59,6 +58,7 @@ export const populateLibraryManager = async (
   let libVersion = "";
   let libDoc = "";
   const deps: string[] = [];
+  const unresolvedDeps: Array<{ name: string; loc: FileLoc }> = [];
 
   if (hasLib) {
     libName = split[split.length - 2];
@@ -87,11 +87,21 @@ export const populateLibraryManager = async (
         }
 
         deps.push(dep);
+
+        // Check if this dependency is available in the resolved path
+        if (libManager.getLib(dep) == null) {
+          const depProto = protoDeps[key].children?.lib;
+          if (depProto?.loc != null) {
+            // Use qnameLoc (points to the value) if available, else fall back to loc
+            const valueLoc = depProto.qnameLoc ?? depProto.loc;
+            unresolvedDeps.push({ name: dep, loc: valueLoc });
+          }
+        }
       });
   }
 
   if (!libName) {
-    return;
+    return unresolvedDeps;
   }
 
   if (libManager.getLib(libName) == null) {
@@ -103,7 +113,7 @@ export const populateLibraryManager = async (
   const xetoLib = libManager.getLib(libName);
 
   if (xetoLib == null) {
-    return;
+    return unresolvedDeps;
   }
 
   compilersToLibs.set(compiler, xetoLib);
@@ -118,6 +128,8 @@ export const populateLibraryManager = async (
       xetoLib.addChild(name, proto);
     });
   }
+
+  return unresolvedDeps;
 };
 
 export const parseDocument = async (
@@ -172,8 +184,31 @@ export const parseDocument = async (
       diagnostics.push(diagnostic);
     }
   } finally {
-    // time to add it to the library manager
-    void populateLibraryManager(compiler, connection, libManager);
+    // time to add it to the library manager (returns unresolved deps for lib.xeto files)
+    const unresolvedDeps = await populateLibraryManager(compiler, connection, libManager);
+
+    // Warn on unresolved library dependencies in lib.xeto
+    for (const dep of unresolvedDeps) {
+      // Find the exact position of the quoted lib name in the text near the loc
+      const searchStart = Math.max(0, dep.loc.charIndex - 20);
+      const searchEnd = Math.min(text.length, dep.loc.charIndex + dep.name.length + 20);
+      const searchRegion = text.substring(searchStart, searchEnd);
+      const nameIdx = searchRegion.indexOf(`"${dep.name}"`);
+      const exactStart = nameIdx >= 0
+        ? searchStart + nameIdx + 1   // +1 to skip opening quote
+        : dep.loc.charIndex;
+      const exactEnd = exactStart + dep.name.length;
+
+      diagnostics.push({
+        severity: DiagnosticSeverity.Warning,
+        range: {
+          start: textDocument.positionAt(exactStart),
+          end: textDocument.positionAt(exactEnd),
+        },
+        message: `Library "${dep.name}" not found in resolved path. Check your fan.props path or xeto.libraries.external setting.`,
+        source: "xeto",
+      });
+    }
 
     if (ARE_LIBS_LOADED) {
       // resolve refs

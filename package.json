@@ -3,7 +3,7 @@
   "description": "Language support for Xeto - provides syntax highlighting, auto-complete, and code navigation for .xeto files",
   "displayName": "Xeto IDE Extension",
   "license": "BSD-3",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "categories": [],
   "keywords": [
     "multi-root ready"
@@ -56,6 +56,12 @@
         }
       }
     },
+    "commands": [
+      {
+        "command": "xeto.showResolvedPath",
+        "title": "Xeto: Show Resolved Env Path"
+      }
+    ],
     "semanticTokenTypes": [
       {
         "id": "docLink",
