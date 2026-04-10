@@ -6,6 +6,7 @@ import { loadXetolibIntoManager } from "./loadXetolib";
 
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { pathToFileURL } from "node:url";
 import { EVENT_TYPE, eventBus } from "../events";
 
 export const loadExtLib = (
@@ -16,12 +17,13 @@ export const loadExtLib = (
   try {
     const files = fs.readdirSync(root, { withFileTypes: true });
     const libName = path.basename(root);
+    const rootUri = pathToFileURL(root).toString();
 
     //	parse the lib file first
     const libXetoContents = fs
       .readFileSync(path.join(root, "lib.xeto"))
       .toString("utf-8");
-    const libInfoCompiler = new ProtoCompiler(root);
+    const libInfoCompiler = new ProtoCompiler(rootUri);
 
     libInfoCompiler.run(libXetoContents);
 
@@ -42,7 +44,7 @@ export const loadExtLib = (
       });
     }
 
-    const lib = new XetoLib(libName, libVersion, root, libDoc);
+    const lib = new XetoLib(libName, libVersion, rootUri, libDoc);
     lib.includePriority = priority;
     lib.addMeta(libVersion, libDoc, deps);
 
@@ -58,7 +60,7 @@ export const loadExtLib = (
         const filePath = path.join(root, file.name);
         const fileContent = fs.readFileSync(filePath).toString("utf-8");
 
-        const compiler = new ProtoCompiler(filePath);
+        const compiler = new ProtoCompiler(pathToFileURL(filePath).toString());
         compiler.run(fileContent);
 
         if (compiler.root == null) {

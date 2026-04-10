@@ -59,27 +59,17 @@ let lastPathInfo: { mode: string; workDir: string; pathCount: number; dirs: stri
 // Track the current path context to detect when we switch repos
 let currentWorkDir: string | null = null;
 
+const uriToPath = (uri: string): string => {
+  try { return fileURLToPath(uri); } catch { return uri; }
+};
+
 const getRootFolderFromParams = (params: InitializeParams): string[] => {
-  let ret = "";
-
   if (params.workspaceFolders != null) {
-    return params.workspaceFolders.map((folder) => {
-      const p = folder.uri.match(/^file:\/\/\/[a-zA-Z]%3A\//)
-        ? folder.uri.replace("file:///", "")
-        : folder.uri.replace("file://", "");
-
-      return decodeURIComponent(p);
-    });
-  } else {
-    ret = params.rootUri ?? "";
+    return params.workspaceFolders.map((folder) => uriToPath(folder.uri));
   }
 
-  const p = ret.match(/^file:\/\/\/[a-zA-Z]%3A\//)
-    ? ret.replace("file:///", "")
-    : ret.replace("file://", "");
-  ret = decodeURIComponent(p);
-
-  return [ret];
+  const rootUri = params.rootUri ?? "";
+  return rootUri.length > 0 ? [uriToPath(rootUri)] : [""];
 };
 
 

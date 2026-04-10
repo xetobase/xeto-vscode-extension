@@ -1,4 +1,5 @@
 import { type Connection } from "vscode-languageserver";
+import { fileURLToPath } from "node:url";
 import { type CompilerError } from "./compiler/Errors";
 
 export const VARS: {
@@ -22,7 +23,8 @@ export const isPartOfLib = async (
       const fs = await import("fs/promises");
       const osPath = await import("path");
 
-      const libPath = path.match(/file:\/\/[a-zA-Z]:\//) ? path.replace("file://", "") : path.replace("file:/", "");
+      let libPath: string;
+      try { libPath = fileURLToPath(path); } catch { libPath = path; }
 
       const stat = await fs.stat(
         osPath.join(libPath, "..", "lib.xeto")
