@@ -16,6 +16,7 @@ The XETO Extension for VSCode provides language support and code editing feature
 - **Diagnostics** - syntax errors and unresolved dependency warnings
 - **Props-based resolution** - automatic library discovery via `fan.props` / `xeto.props`
 - **Context switching** - reloads libraries when switching between repos
+- **Build current lib** - status bar button to run `fan xeto build` for the active lib
 - **Rename symbols** - across the entire workspace
 - **Formatting** - automatic code formatting
 
@@ -65,6 +66,24 @@ The status bar shows the current resolution state:
 - `Xeto: bundled only` - no props file found
 
 Click it to see the full resolved path in the Output channel.
+
+### Build Current Lib
+
+A second status bar button — `$(tools) Build: <libName>` — appears whenever the active
+file belongs to a Xeto lib (a directory containing a `lib.xeto`). Clicking it runs
+`fan xeto build <libName>` in a reusable **Xeto Build** terminal.
+
+Because a lib can be buildable from more than one props context (its own repo, or another
+repo whose `path=` includes it — e.g. building a `cc.*` lib through `studio`'s `fan.props`),
+the button resolves the build context as follows:
+
+- **One valid context** → builds immediately.
+- **Multiple contexts** → a quick pick lets you choose which `workDir` to build from.
+  Your choice is remembered as the per-lib default, so subsequent clicks build without
+  prompting. The chosen context shows in the button label: `Build: <libName> (studio)`.
+
+To clear a remembered choice, run **`Xeto: Reset Build Context for Current Lib`** from the
+command palette.
 
 ### Dependency Diagnostics
 

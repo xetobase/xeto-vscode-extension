@@ -164,6 +164,138 @@ export function activate(context: ExtensionContext): void {
       pathChannel.show();
     })
   );
+
+  // --- Status bar: build current lib button (context-aware) ---
+  const buildBar = window.createStatusBarItem(StatusBarAlignment.Right, 49);
+  buildBar.command = "xeto.buildCurrentLib";
+  context.subscriptions.push(buildBar);
+
+  type WorkDir = { workDir: string; mode: string };
+  let buildInfo: { libName: string; workDirs: WorkDir[] } | null = null;
+
+  // Sticky per-lib chosen workDir (persisted across sessions)
+  const chosenKey = (libName: string): string => `xeto.buildContext.${libName}`;
+  const getChosen = (libName: string): string | undefined =>
+    context.globalState.get<string>(chosenKey(libName));
+  const setChosen = (libName: string, workDir: string): Thenable<void> =>
+    context.globalState.update(chosenKey(libName), workDir);
+
+  // Reusable terminal for builds
+  let buildTerminal: import("vscode").Terminal | null = null;
+  context.subscriptions.push(
+    window.onDidCloseTerminal((t) => {
+      if (t === buildTerminal) buildTerminal = null;
+    })
+  );
+
+  // Refresh the build button for the active editor
+  const refreshBuildBar = (): void => {
+    const editor = window.activeTextEditor;
+    if (editor?.document.languageId !== "xeto") {
+      buildBar.hide();
+      buildInfo = null;
+      return;
+    }
+
+    const uri = editor.document.uri.toString();
+    client.sendRequest("xeto/getBuildInfo", { uri }).then(
+      (result: unknown) => {
+        const info = result as typeof buildInfo;
+        if (info != null && info.workDirs.length > 0) {
+          buildInfo = info;
+          const chosen = getChosen(info.libName);
+          const ctx = chosen != null ? ` (${path.basename(chosen)})` : "";
+          buildBar.text = `$(tools) Build: ${info.libName}${ctx}`;
+          buildBar.tooltip =
+            `Run "fan xeto build ${info.libName}"\n` +
+            (chosen != null
+              ? `Context: ${chosen}`
+              : `${info.workDirs.length} build context(s) — click to choose`);
+          buildBar.show();
+        } else {
+          buildInfo = null;
+          buildBar.hide();
+        }
+      },
+      () => {
+        buildInfo = null;
+        buildBar.hide();
+      }
+    );
+  };
+
+  // Resolve which workDir to build from: use the sticky default if still valid,
+  // otherwise prompt. With a single candidate, just use it (no prompt).
+  const resolveWorkDir = async (
+    libName: string,
+    workDirs: WorkDir[]
+  ): Promise<string | undefined> => {
+    const chosen = getChosen(libName);
+    if (chosen != null && workDirs.some((w) => w.workDir === chosen)) {
+      return chosen;
+    }
+
+    if (workDirs.length === 1) {
+      await setChosen(libName, workDirs[0].workDir);
+      return workDirs[0].workDir;
+    }
+
+    const picked = await window.showQuickPick(
+      workDirs.map((w) => ({
+        label: path.basename(w.workDir),
+        description: w.mode,
+        detail: w.workDir,
+        workDir: w.workDir,
+      })),
+      { placeHolder: `Choose build context for ${libName} (remembered as default)` }
+    );
+
+    if (picked == null) return undefined;
+    await setChosen(libName, picked.workDir);
+    return picked.workDir;
+  };
+
+  // Command: build the current lib in its chosen workDir
+  context.subscriptions.push(
+    commands.registerCommand("xeto.buildCurrentLib", async () => {
+      if (buildInfo == null) {
+        void window.showWarningMessage("No Xeto lib resolved for the active file.");
+        return;
+      }
+
+      const { libName, workDirs } = buildInfo;
+      const workDir = await resolveWorkDir(libName, workDirs);
+      if (workDir == null) return;
+
+      if (buildTerminal == null) {
+        buildTerminal = window.createTerminal({ name: "Xeto Build", cwd: workDir });
+      }
+
+      buildTerminal.show();
+      buildTerminal.sendText(`cd "${workDir}" && fan xeto build ${libName}`);
+      refreshBuildBar();
+    })
+  );
+
+  // Command: clear the remembered build context for the current lib
+  context.subscriptions.push(
+    commands.registerCommand("xeto.resetBuildContext", async () => {
+      if (buildInfo == null) return;
+      await context.globalState.update(chosenKey(buildInfo.libName), undefined);
+      refreshBuildBar();
+      void window.showInformationMessage(
+        `Cleared build context for ${buildInfo.libName}.`
+      );
+    })
+  );
+
+  // Refresh build button on startup and when switching editors
+  setTimeout(refreshBuildBar, 3000);
+  context.subscriptions.push(
+    window.onDidChangeActiveTextEditor(() => {
+      setTimeout(refreshBuildBar, 500);
+    })
+  );
 }
 
 export function deactivate(): Thenable<void> | undefined {

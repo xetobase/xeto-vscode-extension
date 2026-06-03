@@ -23,6 +23,7 @@ import { generateInitResults, onInitialized } from "./init";
 import { compilersToLibs, parseDocument, uriToLibs } from "./parseDocument";
 import { resolveXetoPath, clearCache } from "./libraries/XetoPathResolver";
 import { scanPathForLibs, clearScannedDirs } from "./libraries/PathScanner";
+import * as fs from "node:fs";
 
 import {
   addAutoCompletion,
@@ -227,6 +228,93 @@ connection.onRequest("xeto/getPathInfo", (params: { uri?: string }) => {
   // No URI provided — fallback to last captured info
   return lastPathInfo;
 });
+
+// Custom request: return build info { libName, workDirs } for a given file.
+// libName is the name of the lib dir (the dir containing the file's sibling lib.xeto).
+// workDirs lists every props workDir (dir with fan.props/xeto.props) that can build this
+// lib — i.e. whose resolved path dirs contain src/xeto/<libName>. A lib may be buildable
+// from multiple contexts (its own repo, or another repo whose path= includes it). The
+// client picks one (and may remember a default per lib).
+connection.onRequest("xeto/getBuildInfo", (params: { uri?: string }) => {
+  if (params?.uri == null) return null;
+
+  let filePath: string | null = null;
+  try { filePath = fileURLToPath(params.uri); } catch { return null; }
+  if (filePath == null) return null;
+
+  const libDir = findLibDir(path.dirname(filePath));
+  if (libDir == null) return null;
+  const libName = path.basename(libDir);
+
+  const workDirs = findBuildWorkDirs(libName);
+  if (workDirs.length === 0) return null;
+
+  return { libName, workDirs };
+});
+
+// Walk up from startDir looking for the nearest directory that contains a lib.xeto.
+const findLibDir = (startDir: string): string | null => {
+  let dir = path.resolve(startDir);
+  const root = path.parse(dir).root;
+
+  while (true) {
+    if (fs.existsSync(path.join(dir, "lib.xeto"))) return dir;
+    const parent = path.dirname(dir);
+    if (parent === dir || dir === root) return null;
+    dir = parent;
+  }
+};
+
+// Find every props workDir that can build the given lib. A props workDir can build the lib
+// if any of its resolved path dirs contains src/xeto/<libName>. Candidates are the props
+// files found in the workspace roots and their immediate children (repos are siblings).
+const findBuildWorkDirs = (
+  libName: string
+): Array<{ workDir: string; mode: string }> => {
+  const results: Array<{ workDir: string; mode: string }> = [];
+  const seen = new Set<string>();
+
+  for (const root of rootFolders.filter((f) => Boolean(f))) {
+    for (const candidate of scanForPropsDirs(root)) {
+      if (seen.has(candidate.workDir)) continue;
+      const resolved = resolveXetoPath(candidate.workDir);
+      if (resolved == null) continue;
+      const buildable = resolved.dirs.some((dir) =>
+        fs.existsSync(path.join(dir, "src", "xeto", libName))
+      );
+      if (!buildable) continue;
+      seen.add(candidate.workDir);
+      results.push(candidate);
+    }
+  }
+
+  return results;
+};
+
+// Find directories containing a fan.props or xeto.props in the given root and its
+// immediate subdirectories.
+const scanForPropsDirs = (root: string): Array<{ workDir: string; mode: string }> => {
+  const found: Array<{ workDir: string; mode: string }> = [];
+
+  const check = (dir: string): void => {
+    if (fs.existsSync(path.join(dir, "xeto.props"))) {
+      found.push({ workDir: dir, mode: "xeto.props" });
+    } else if (fs.existsSync(path.join(dir, "fan.props"))) {
+      found.push({ workDir: dir, mode: "fan.props" });
+    }
+  };
+
+  check(root);
+  try {
+    for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+      if (entry.isDirectory()) check(path.join(root, entry.name));
+    }
+  } catch {
+    // root unreadable
+  }
+
+  return found;
+};
 
 addAutoCompletion(
   connection,
