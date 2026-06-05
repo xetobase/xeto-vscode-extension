@@ -1,0 +1,153 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Axon",
+  "scopeName": "source.axon",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#uri" },
+    { "include": "#ref" },
+    { "include": "#symbol" },
+    { "include": "#numbers" },
+    { "include": "#keywords" },
+    { "include": "#constants" },
+    { "include": "#functionCall" },
+    { "include": "#typename" },
+    { "include": "#operators" },
+    { "include": "#identifier" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.axon",
+          "begin": "//",
+          "end": "$",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.comment.axon" }
+          }
+        },
+        {
+          "name": "comment.block.axon",
+          "begin": "/\\*",
+          "end": "\\*/",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.comment.begin.axon" }
+          },
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.comment.end.axon" }
+          },
+          "patterns": [{ "include": "#comments" }]
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.triple.axon",
+          "begin": "\"\"\"",
+          "end": "\"\"\"",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.string.begin.axon" }
+          },
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.string.end.axon" }
+          },
+          "patterns": [{ "include": "#stringEscape" }]
+        },
+        {
+          "name": "string.quoted.double.raw.axon",
+          "begin": "r\"",
+          "end": "\"",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.string.begin.axon" }
+          },
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.string.end.axon" }
+          }
+        },
+        {
+          "name": "string.quoted.double.axon",
+          "begin": "\"",
+          "end": "\"",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.string.begin.axon" }
+          },
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.string.end.axon" }
+          },
+          "patterns": [{ "include": "#stringEscape" }]
+        }
+      ]
+    },
+    "stringEscape": {
+      "name": "constant.character.escape.axon",
+      "match": "\\\\(?:[bfnrt\"$'`\\\\]|u\\{[0-9a-fA-F]{1,6}\\}|u[0-9a-fA-F]{4})"
+    },
+    "uri": {
+      "name": "string.other.uri.axon",
+      "begin": "`",
+      "end": "`",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.uri.begin.axon" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.uri.end.axon" }
+      }
+    },
+    "ref": {
+      "name": "constant.other.ref.axon",
+      "match": "@[a-zA-Z0-9_:\\-.~]+"
+    },
+    "symbol": {
+      "name": "constant.other.symbol.axon",
+      "match": "\\^[a-zA-Z0-9_:\\-.~]+"
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.axon",
+          "match": "\\b0x[0-9a-fA-F_]+"
+        },
+        {
+          "name": "constant.numeric.datetime.axon",
+          "match": "\\b\\d{4}-\\d{2}-\\d{2}(?:T[\\d:.]+(?:[Zz]|[+\\-]\\d{2}:\\d{2})?(?:\\s+[A-Za-z_\\-/]+)?)?"
+        },
+        {
+          "name": "constant.numeric.time.axon",
+          "match": "\\b\\d{1,2}:\\d{2}(?::\\d{2}(?:\\.\\d+)?)?\\b"
+        },
+        {
+          "name": "constant.numeric.decimal.axon",
+          "match": "\\b\\d[0-9_]*(?:\\.\\d[0-9_]*)?(?:[eE][+\\-]?\\d+)?(?:[a-zA-Z%$/°]+[a-zA-Z0-9%$/°²³]*)?"
+        }
+      ]
+    },
+    "keywords": {
+      "name": "keyword.control.axon",
+      "match": "\\b(and|catch|defcomp|deflinks|do|else|end|if|not|or|return|throw|try)\\b"
+    },
+    "constants": {
+      "name": "constant.language.axon",
+      "match": "\\b(true|false|null)\\b"
+    },
+    "functionCall": {
+      "match": "\\b([a-z_][a-zA-Z0-9_]*)\\s*(?=\\()",
+      "captures": {
+        "1": { "name": "entity.name.function.axon" }
+      }
+    },
+    "typename": {
+      "name": "entity.name.type.axon",
+      "match": "\\b[A-Z][a-zA-Z0-9_]*\\b"
+    },
+    "operators": {
+      "name": "keyword.operator.axon",
+      "match": "=>|->|<=>|==|!=|<=|>=|\\.\\.|::|[:+\\-*/!^?&=<>|.]"
+    },
+    "identifier": {
+      "name": "variable.other.axon",
+      "match": "\\b[a-z_][a-zA-Z0-9_]*\\b"
+    }
+  }
+}

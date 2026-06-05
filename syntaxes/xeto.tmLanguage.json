@@ -65,11 +65,12 @@
       "name": "xeto.proto.container",
       "patterns": [
         { "include": "#leadingDoc" },
-        { "include": "#protoIntersection" },
-        { "include": "#trailingDoc" },
         { "include": "#embeddedAxon" },
         { "include": "#embeddedJS" },
+        { "include": "#embeddedPython" },
         { "include": "#embeddedMarkdown" },
+        { "include": "#protoIntersection" },
+        { "include": "#trailingDoc" },
         { "include": "#heredoc" }
       ]
     },
@@ -217,10 +218,12 @@
     },
     "embeddedAxon": {
       "name": "meta.embedded.block.axon",
-      "begin": "-{3,}\\s*axon",
+      "begin": "\\b(axon)\\s*(:)\\s*(-{3,})",
       "end": "-{3,}",
       "beginCaptures": {
-        "0": { "name": "punctuation.definition.string.begin.xeto" }
+        "1": { "name": "entity.name.tag.xeto" },
+        "2": { "name": "keyword.control" },
+        "3": { "name": "punctuation.definition.string.begin.xeto" }
       },
       "endCaptures": {
         "0": { "name": "punctuation.definition.string.end.xeto" }
@@ -233,10 +236,12 @@
     },
     "embeddedJS": {
       "name": "meta.embedded.block.js",
-      "begin": "-{3,}\\s*javascript",
+      "begin": "\\b(js)\\s*(:)\\s*(-{3,})",
       "end": "-{3,}",
       "beginCaptures": {
-        "0": { "name": "punctuation.definition.string.begin.xeto" }
+        "1": { "name": "entity.name.tag.xeto" },
+        "2": { "name": "keyword.control" },
+        "3": { "name": "punctuation.definition.string.begin.xeto" }
       },
       "endCaptures": {
         "0": { "name": "punctuation.definition.string.end.xeto" }
@@ -247,6 +252,25 @@
         }
       ]
     },
+    "embeddedPython": {
+      "name": "meta.embedded.block.python",
+      "begin": "\\b(py)\\s*(:)\\s*(-{3,})",
+      "end": "-{3,}",
+      "beginCaptures": {
+        "1": { "name": "entity.name.tag.xeto" },
+        "2": { "name": "keyword.control" },
+        "3": { "name": "punctuation.definition.string.begin.xeto" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.xeto" }
+      },
+      "patterns": [
+        {
+          "include": "source.python"
+        }
+      ]
+    },
+
     "embeddedMarkdown": {
       "name": "meta.embedded.block.md",
       "begin": "-{3,}\\s*markdown",

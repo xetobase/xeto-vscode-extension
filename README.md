@@ -9,7 +9,7 @@ The XETO Extension for VSCode provides language support and code editing feature
 
 ### Key Features
 
-- **Syntax highlighting** - with semantic token support
+- **Syntax highlighting** - with semantic token support, including embedded language highlighting inside heredocs (`<axon:--->`, `<js:--->`, `<py:--->`)
 - **Code completion** - type-aware suggestions: inherited slots, enum values, choice subtypes, query constraints, and meta tags — with smart indentation inside `{ }` blocks
 - **Go to definition** - across local files and external libraries
 - **Hover information** - inline documentation on hover
