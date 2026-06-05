@@ -2,11 +2,19 @@ import {
   type TextDocument,
   type Position,
 } from "vscode-languageserver-textdocument";
+import { type TextDocuments } from "vscode-languageserver";
 import { findProtoByQname } from "../FindProto";
 import { type Proto } from "../compiler/Proto";
 import { type ProtoCompiler } from "../compiler/Compiler";
-import { type TextDocuments } from "vscode-languageserver";
 import { type LibraryManager, type XetoLib } from "../libraries";
+
+/// ///////////////////////////////////////////////////////////////////////
+// Identifier scanning + go-to-definition
+//
+// Legacy character-scanning utilities that walk outward from a cursor to
+// reconstruct the qualified identifier under it (handling `::` qnames and
+// `@` data-instance refs).  Used by go-to-definition, hover, and rename.
+/// ///////////////////////////////////////////////////////////////////////
 
 const identifierCharRegexp = /[a-zA-Z0-9_. :\t]/;
 const identifierSegmentCharRegexp = /[a-zA-Z0-9_]/;

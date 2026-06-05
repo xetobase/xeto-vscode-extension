@@ -9,7 +9,7 @@ import { renameInDoc } from "../refactor";
 import { type TextDocument } from "vscode-languageserver-textdocument";
 import { findProtoByQname } from "../FindProto";
 import { type XetoLib } from "../libraries";
-import { getIdentifierLength } from "./utils";
+import { getIdentifierLength } from "./identifier-utils";
 import { type Proto } from "../compiler/Proto";
 
 export const addRenameSymbol = (

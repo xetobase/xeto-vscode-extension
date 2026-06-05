@@ -10,7 +10,7 @@ The XETO Extension for VSCode provides language support and code editing feature
 ### Key Features
 
 - **Syntax highlighting** - with semantic token support
-- **Code completion** - type-aware suggestions from resolved libraries
+- **Code completion** - type-aware suggestions: inherited slots, enum values, choice subtypes, query constraints, and meta tags — with smart indentation inside `{ }` blocks
 - **Go to definition** - across local files and external libraries
 - **Hover information** - inline documentation on hover
 - **Diagnostics** - syntax errors and unresolved dependency warnings
@@ -135,11 +135,38 @@ Each path is scanned for subdirectories containing a `lib.xeto` file (raw source
 
 See the full feature gallery with demos in [FEATURES.md](FEATURES.md).
 
-## Usage
+## How to Use
 
-1. Open a `xeto` file that has the `.xeto` extension
-2. The XETO Extension will automatically activate and provide language features
-3. Use the provided Visual Studio Code keyboard actions and/or commands
+Open any `.xeto` file and the extension activates automatically.
+
+### Completions
+
+Completions trigger automatically as you type, or press <kbd>Ctrl</kbd>+<kbd>Space</kbd> (<kbd>⌃</kbd>+<kbd>Space</kbd> on Mac) to invoke them manually.
+
+| Context | What you get |
+|---------|-------------|
+| Inside a typed `{ }` dict | Slots of the enclosing type (including inherited) |
+| After `slotName:` on a value | Enum values, choice subtypes, or fitting types |
+| Inside a Query dict (e.g. `points { }`) | Subtypes of the query's `of` constraint |
+| After `name:` on a spec declaration | All visible type names |
+| Inside a `< >` meta block | Applicable meta tags |
+| After `@` | Data instance refs |
+
+### Navigation
+
+- **Go to Definition** — <kbd>Ctrl</kbd>+Click or <kbd>F12</kbd> on any type or slot name
+- **Peek Definition** — <kbd>Alt</kbd>+<kbd>F12</kbd>
+- **Hover** — hover over any symbol for inline documentation
+
+### Editing
+
+- **Rename Symbol** — <kbd>F2</kbd> on a symbol to rename across the workspace
+- **Format Document** — <kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>F</kbd>
+
+### Building
+
+Click the `Build: <libName>` button in the status bar to run `fan xeto build` for the current lib.
+
 
 ## Installation
 

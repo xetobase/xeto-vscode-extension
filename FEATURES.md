@@ -17,9 +17,18 @@ Receive real-time errors regarding syntax problems
 
 ## Code Completion
 
-Suggestions regarding properties on existing protos
+Context-aware completions driven by the Xeto type system:
+
+- **Slot completion** — inside a typed `{ }` dict, suggests the type's slots (including inherited), with nested dict expansion
+- **Enum values** — for enum-typed slots, suggests the valid quoted-string values
+- **Choice subtypes** — for choice-typed slots, suggests concrete subtypes
+- **Query constraints** — inside a Query dict (e.g. `points`), suggests subtypes of the `of` constraint
+- **Type completion** — after `slotName:` in a spec declaration, suggests all visible types
+- **Meta tags** — inside `< >` meta blocks, suggests applicable meta tags from `sys::Spec`
+- **Smart formatting** — completions expand with proper 2-space indentation inside tight `{ }` blocks
 
   ![](./docs/images/completion.gif)
+
 
 ## Hover Information
 

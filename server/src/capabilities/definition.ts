@@ -4,7 +4,7 @@ import {
   type DefinitionParams,
   type TextDocuments,
 } from "vscode-languageserver";
-import { getProtoFromFileLoc } from "./utils";
+import { getProtoFromFileLoc } from "./identifier-utils";
 import { type ProtoCompiler } from "../compiler/Compiler";
 import { type TextDocument } from "vscode-languageserver-textdocument";
 import { type LibraryManager, type XetoLib } from "../libraries";
