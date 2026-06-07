@@ -273,10 +273,12 @@
 
     "embeddedMarkdown": {
       "name": "meta.embedded.block.md",
-      "begin": "-{3,}\\s*markdown",
+      "begin": "\\b(md)\\s*(:)\\s*(-{3,})",
       "end": "-{3,}",
       "beginCaptures": {
-        "0": { "name": "punctuation.definition.string.begin.xeto" }
+        "1": { "name": "entity.name.tag.xeto" },
+        "2": { "name": "keyword.control" },
+        "3": { "name": "punctuation.definition.string.begin.xeto" }
       },
       "endCaptures": {
         "0": { "name": "punctuation.definition.string.end.xeto" }
