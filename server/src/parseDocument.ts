@@ -4,7 +4,7 @@ import {
   DiagnosticSeverity,
 } from "vscode-languageserver";
 import { eventBus, EVENT_TYPE } from "./events";
-import { isCompilerError, isPartOfLib } from "./utils";
+import { isCompilerError, isPartOfLib, findOwningLibName } from "./utils";
 import { ProtoCompiler } from "./compiler/Compiler";
 import { type LibraryManager, XetoLib } from "./libraries";
 import {
@@ -51,6 +51,21 @@ export const populateLibraryManager = async (
   }
 
   const split = compiler.sourceUri.split("/");
+
+  // data files (.xetod) hold a typed dict instance, never lib content.
+  // They may live in a subfolder of their lib (e.g. <lib>/aura/build.xetod),
+  // so resolve the owning lib by walking up instead of the sibling check.
+  const isDataFile = compiler.sourceUri.endsWith(".xetod");
+
+  if (isDataFile) {
+    const owningLib = await findOwningLibName(compiler.sourceUri, connection);
+    const xetoLib = owningLib != null ? libManager.getLib(owningLib) : null;
+    if (xetoLib != null) {
+      compilersToLibs.set(compiler, xetoLib);
+      uriToLibs.set(compiler.sourceUri, xetoLib);
+    }
+    return [];
+  }
 
   const hasLib = await isPartOfLib(compiler.sourceUri, connection);
 

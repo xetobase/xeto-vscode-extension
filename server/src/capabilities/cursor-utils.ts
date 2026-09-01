@@ -151,15 +151,18 @@ function parseHeaderString(s: string): DictHeader {
   // strip a trailing Maybe marker on a type ref
   const cleanType = (t: string): string => t.replace(/\?$/, "").trim();
 
-  const colonIdx = s.indexOf(":");
+  // Split on a single colon only -- `::` is a qualified name separator
+  // (e.g. the `aura::AuraBuild {` root header of a .xetod data file).
+  const colonIdx = s.search(/(?<!:):(?!:)/);
   if (colonIdx >= 0) {
     const slot = s.slice(0, colonIdx).trim();
     const type = cleanType(s.slice(colonIdx + 1).trim());
     return { slot: slot || undefined, type: type || undefined };
   }
 
-  // No colon: capitalized is a type ref, lowercase is a marker/slot name
-  if (/^[A-Z]/.test(s)) return { type: cleanType(s) };
+  // No slot colon: a type ref is capitalized or lib-qualified,
+  // lowercase without `::` is a marker/slot name
+  if (/^[A-Z]/.test(s) || s.includes("::")) return { type: cleanType(s) };
   return { slot: s };
 }
 
