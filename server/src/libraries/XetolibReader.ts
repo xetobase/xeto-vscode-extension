@@ -182,7 +182,8 @@ export const readXetolib = (filePath: string): XetolibContent | null => {
     const xetoFiles = new Map<string, string>();
 
     for (const entry of entries) {
-      if (entry.fileName === "meta.props") {
+      // newer xeto builds name this "xeto-meta.props", older ones "meta.props"
+      if (entry.fileName === "meta.props" || entry.fileName === "xeto-meta.props") {
         const data = extractEntry(buf, entry);
         if (data != null) {
           meta = parseMetaProps(data.toString("utf-8"));
