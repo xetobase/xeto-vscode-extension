@@ -179,7 +179,8 @@ export class Parser {
     } else if (
       this.cur === Token.ID &&
       isLower(this.curVal.toString()) &&
-      this.peek !== Token.DOT
+      this.peek !== Token.DOT &&
+      this.peek !== Token.DOUBLE_COLON
     ) {
       proto.name = this.consumeName();
       proto.traits = {
