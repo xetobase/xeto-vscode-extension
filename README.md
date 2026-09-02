@@ -19,6 +19,7 @@ The XETO Extension for VSCode provides language support and code editing feature
 - **Build current lib** - status bar button to run `fan xeto build` for the active lib
 - **Rename symbols** - across the entire workspace
 - **Formatting** - automatic code formatting
+- **Data file support** - full language support for `.xetod` data files, including completion and navigation against the qualified root type
 
 ### Environments
 
@@ -137,7 +138,7 @@ See the full feature gallery with demos in [FEATURES.md](FEATURES.md).
 
 ## How to Use
 
-Open any `.xeto` file and the extension activates automatically.
+Open any `.xeto` or `.xetod` file and the extension activates automatically.
 
 ### Completions
 
@@ -162,6 +163,13 @@ Completions trigger automatically as you type, or press <kbd>Ctrl</kbd>+<kbd>Spa
 
 - **Rename Symbol** — <kbd>F2</kbd> on a symbol to rename across the workspace
 - **Format Document** — <kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>F</kbd>
+
+### Data Files (`.xetod`)
+
+Xeto data files get the same language support as specs. When a data file's root
+dict declares a qualified type (e.g. `aura::AuraBuild { ... }`), the extension
+resolves that lib and provides completion, hover, and go-to-definition against
+its types.
 
 ### Building
 
