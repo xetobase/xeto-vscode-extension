@@ -1,0 +1,7 @@
+# test/dev-only files — never ship in the .vsix
+test/**
+test-files/**
+coverage/**
+vitest.config.ts
+TEST_SUITE_ROADMAP.md
+.github/**

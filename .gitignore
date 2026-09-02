@@ -10,5 +10,7 @@ client/dist/**
 server/dist/**
 
 
+coverage/**
+
 .DS_Store
 *.vsix
